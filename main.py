@@ -10,7 +10,62 @@ from threading import Thread
 class MuunnaKuva():
     def __init__(self, kuva: str) -> None:
             self.kuva = kuva
-            self.polku = getcwd()         
+            self.polku = getcwd()
+            self.varit = [[152, 110, 49], [149, 106, 45], [244, 200, 75], [120, 111, 77], [195, 134, 46], [204, 158, 73], [143, 126, 72], [141, 126, 73], [247, 193, 77], [45, 145, 195], [251, 223, 108], [231, 163, 47], [231, 162, 45], [166, 134, 54], [248, 200, 94], [5, 3, 0], [217, 151, 79], [11, 7, 2], [213, 168, 64], [136, 119, 70], [245, 193, 79], [247, 200, 81], [247, 202, 82], [251, 228, 121], [250, 219, 99], [143, 125, 58], [247, 201, 64], [240, 194, 77], [215, 149, 41], [143, 101, 21], [207, 144, 50], [183, 140, 73], [253, 238, 83], [81, 70, 36], [141, 113, 41], [92, 73, 29], [60, 13, 45], [36, 33, 55], [81, 59, 118], [10, 5, 13], [9, 4, 12], [201, 78, 22], [231, 174, 71], [2, 2, 2], [134, 103, 67], [84, 72, 62], [23, 9, 5], [247, 141, 33], [66, 37, 14], [62, 32, 22], [203, 62, 35], [91, 69, 61], [3, 2, 0], [179, 44, 32], [226, 207, 184], [235, 47, 32], [196, 84, 46], [86, 37, 32], [89, 29, 29], [229, 54, 107], [61, 22, 22], [230, 44, 32], [79, 40, 40], [240, 130, 128], [234, 183, 196], [208, 112, 105], [231, 190, 199], [246, 171, 163], [99, 64, 73], [89, 61, 44], [102, 132, 102], [107, 116, 37], [69, 75, 31], [92, 112, 26], [135, 198, 84], [38, 54, 42], [85, 91, 44], [41, 54, 25], [89, 130, 12], [100, 151, 6], [42, 63, 16], [41, 60, 24], [45, 60, 20], [102, 175, 65], [31, 43, 15], [0, 2, 0], [49, 97, 53], [148, 189, 123], [75, 105, 36], [53, 55, 8], [120, 176, 49], [63, 170, 84], [187, 205, 94], [86, 143, 45], [61, 65, 67], [41, 84, 92], [43, 183, 222], [110, 201, 241], [232, 248, 254], [34, 39, 41], [122, 158, 175], [53, 124, 202], [86, 123, 198], [174, 213, 239], [42, 80, 128], [60, 93, 105], [178, 184, 196], [85, 83, 80], [221, 208, 181], [232, 244, 251], [91, 93, 96], [45, 44, 42], [117, 114, 110], [91, 91, 91], [197, 170, 135], [133, 110, 122], [243, 238, 238], [5, 4, 4], [2, 2, 2], [186, 187, 188], [180, 180, 180], [121, 86, 58], [230, 212, 196], [126, 94, 62], [221, 174, 125], [119, 87, 59], [224, 177, 122], [169, 110, 65], [119, 64, 31], [145, 100, 55], [4, 4, 5], [104, 74, 52], [11, 10, 10], [199, 184, 158], [10, 9, 7], [60, 59, 60], [48, 53, 58], [35, 34, 37], [66, 64, 75], [81, 81, 82], [103, 99, 96], [66, 66, 66], [77, 80, 88], [35, 35, 35], [77, 82, 89], [260, 260, 260]]
+            self.lyodetytyt_varit = {}
+                           
+                
+    def suorita(self) -> Image.Image:
+        with Image.open(self.kuva) as analysoitava_kuva:
+            leveys, korkeus = analysoitava_kuva.size
+
+            while self.pinta_ala(leveys, korkeus) < 2081281:
+                leveys, korkeus = floor(leveys/2), floor(korkeus/2)
+
+            if analysoitava_kuva.mode != "RGB":
+                analysoitava_kuva=analysoitava_kuva.convert("RGB")
+
+            analysoitava_kuva = np.array(analysoitava_kuva)       #laskee pikselin väri arvot yhteen
+            y_uusi_kuva, x_uusi_kuva = 0,0
+            valittu_pikseli = [260,260,260]
+            with Image.new("RGBA", (korkeus*25, leveys*25), (0,0,0,0)) as uusi_kuva:
+                for vaaka_rivi in tqdm(analysoitava_kuva):
+                    for pikseli in vaaka_rivi:
+
+                        pikseli = list(pikseli)
+
+                        if sum(pikseli) == 0:
+                            x_uusi_kuva += 25
+
+                        else:
+                            if str(pikseli) in self.lyodetytyt_varit:
+                                valittu_pikseli = self.lyodetytyt_varit[str(pikseli)]
+
+                            else:
+                                for emoiji_vari in self.varit:
+                                    if valittu_pikseli[0] > emoiji_vari[0]-pikseli[0] >= 0 and valittu_pikseli[1] > emoiji_vari[1]-pikseli[1] >= 0  and valittu_pikseli[2] > emoiji_vari[2]-pikseli[2] >= 0:
+                                        valittu_pikseli = emoiji_vari
+                                        self.lyodetytyt_varit[str(pikseli)] = emoiji_vari
+
+                            numero =self.varit.index(valittu_pikseli)
+                            try:
+                                with Image.open(path.join(self.polku,"emoijit",f"emoiji_{numero}.png")) as kopioitava_kuva:
+                                    uusi_kuva.paste(kopioitava_kuva, (x_uusi_kuva,y_uusi_kuva))
+                            
+                            except FileNotFoundError:
+                                print(f"kuvaa emoiji_{numero}.png ei ole kansiossa emoiji_kuvat")
+                                break
+                                
+                            x_uusi_kuva += 25
+
+                    y_uusi_kuva += 25
+                    x_uusi_kuva = 0
+
+                    
+                return uusi_kuva
+
+    def pinta_ala(self, leveys: int, korkeus: int) -> int:
+        return leveys*korkeus*625         
     
     def __pyorista(self, n: float | int, tarkkuus: int = 0) -> int:
         "tarkkuus kertoo kuinka monen desimaalin tarkuuteen pyoristää"
@@ -21,56 +76,6 @@ class MuunnaKuva():
         else:
             return floor(n)
                 
-    def suorita(self) -> Image.Image:
-        with Image.open(self.kuva) as analysoitava_kuva:
-            leveys, korkeus = analysoitava_kuva.size
-
-            if leveys > 2000 or korkeus > 2000:
-                analysoitava_kuva.info
-                leveys, korkeus = self.__pyorista(leveys/2), self.__pyorista(korkeus/2)
-
-            if analysoitava_kuva.mode != "RGB":
-                analysoitava_kuva=analysoitava_kuva.convert("RGB")
-
-            analysoitava_kuva = self.analysoi_kuva(analysoitava_kuva)
-
-            y_uusi_kuva, x_uusi_kuva = 0,0
-
-            with Image.new("RGBA",(leveys*25,korkeus*25), (0,0,0,0)) as uusi_kuva:
-                for lista in tqdm(analysoitava_kuva):
-                    for pikselin_vari_arvo in lista:
-                        pikselin_vari_arvo = int(pikselin_vari_arvo)
-
-                        if pikselin_vari_arvo == 0:
-                            x_uusi_kuva += 25
-
-                        else:
-                            varit = [614, 939, 606, 985, 1098, 964, 967, 810, 896, 957, 797, 521, 934, 987, 994, 936, 807, 755, 936, 895, 865, 1028, 896, 551, 984, 723, 696, 909, 804, 754, 873, 877, 485, 362, 1040, 323, 392, 922, 556, 1237, 985, 349, 481, 518, 972, 640, 582, 224, 380, 596, 312, 471, 402, 348, 480, 577, 404, 475, 344, 659, 365, 219, 410, 969, 1085, 826, 418, 1100, 932, 427, 825, 468, 708, 199, 585, 764, 523, 408, 615, 327, 444, 449, 562, 213, 545, 444, 601, 399, 560, 473, 439, 670, 495, 561, 1319, 1157, 1170, 1106, 1405, 1323, 1328, 790, 767, 966, 332, 975, 1046, 489, 626, 1379, 564, 1265, 693, 1370, 1023, 718, 1449, 1000, 609, 1259, 1286, 554, 816, 338, 492, 511, 528, 379, 199, 446, 509, 373, 401, 567, 761, 261, 324, 394, 207, 90, 80, 313, 399, 725, 673, 854]
-                            lyodetytyt_varit = {}
-                            valittu_vari_arvo = 2000
-                            
-                            if pikselin_vari_arvo in lyodetytyt_varit:
-                                valittu_vari_arvo = lyodetytyt_varit[pikselin_vari_arvo]
-
-                            else:
-                                for laskettu_vari_arvo  in varit:
-                                    if valittu_vari_arvo > abs(pikselin_vari_arvo -  laskettu_vari_arvo) > 0:
-                                        valittu_vari_arvo = laskettu_vari_arvo
-                                        lyodetytyt_varit[pikselin_vari_arvo] = laskettu_vari_arvo
-
-                            numero=varit.index(valittu_vari_arvo)
-                            try:
-                                with Image.open(path.join(self.polku,"emoijit",f"emoiji_{numero}.png")) as kopioitava_kuva:
-                                    uusi_kuva.paste(kopioitava_kuva, (x_uusi_kuva,y_uusi_kuva))
-                            except FileNotFoundError:
-                                print(f"kuvaa emoiji_{numero}.png ei ole kansiossa emoiji_kuvat")
-                                
-                            x_uusi_kuva += 25
-
-                    y_uusi_kuva += 25
-                    x_uusi_kuva = 0
-
-                return uusi_kuva
 
     def analysoi_kuva(self, analysoitava_kuva: Image) -> np.array:
         """laskee kuvan pikselit yhteen"""
