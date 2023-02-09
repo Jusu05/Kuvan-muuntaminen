@@ -15,75 +15,55 @@ class MuunnaKuva():
             self.lyodetytyt_varit = {}
                            
                 
-    def suorita(self) -> Image.Image:
-        with Image.open(self.kuva) as analysoitava_kuva:
-            leveys, korkeus = analysoitava_kuva.size
+    def suorita(self) -> Image.Image | str:
+        try:
+            with Image.open(self.kuva) as analysoitava_kuva:
+                leveys, korkeus = analysoitava_kuva.size
 
-            while self.pinta_ala(leveys, korkeus) < 2081281:
-                leveys, korkeus = floor(leveys/2), floor(korkeus/2)
+                if analysoitava_kuva.mode != "RGB":
+                    analysoitava_kuva=analysoitava_kuva.convert("RGB")
 
-            if analysoitava_kuva.mode != "RGB":
-                analysoitava_kuva=analysoitava_kuva.convert("RGB")
+                analysoitava_kuva = np.array(analysoitava_kuva)       
+                
+                y_uusi_kuva, x_uusi_kuva = 0,0
+                valittu_pikseli = [260,260,260]
+                with Image.new("RGBA", (leveys*25, korkeus*25), (0,0,0,0)) as uusi_kuva:
+                    for vaaka_rivi in tqdm(analysoitava_kuva):
+                        for pikseli in vaaka_rivi:
 
-            analysoitava_kuva = np.array(analysoitava_kuva)       #laskee pikselin väri arvot yhteen
-            y_uusi_kuva, x_uusi_kuva = 0,0
-            valittu_pikseli = [260,260,260]
-            with Image.new("RGBA", (korkeus*25, leveys*25), (0,0,0,0)) as uusi_kuva:
-                for vaaka_rivi in tqdm(analysoitava_kuva):
-                    for pikseli in vaaka_rivi:
+                            pikseli = list(pikseli)
 
-                        pikseli = list(pikseli)
-
-                        if sum(pikseli) == 0:
-                            x_uusi_kuva += 25
-
-                        else:
-                            if str(pikseli) in self.lyodetytyt_varit:
-                                valittu_pikseli = self.lyodetytyt_varit[str(pikseli)]
+                            if sum(pikseli) == 0:
+                                x_uusi_kuva += 25
 
                             else:
-                                for emoiji_vari in self.varit:
-                                    if valittu_pikseli[0] > emoiji_vari[0]-pikseli[0] >= 0 and valittu_pikseli[1] > emoiji_vari[1]-pikseli[1] >= 0  and valittu_pikseli[2] > emoiji_vari[2]-pikseli[2] >= 0:
-                                        valittu_pikseli = emoiji_vari
-                                        self.lyodetytyt_varit[str(pikseli)] = emoiji_vari
+                                if str(pikseli) in self.lyodetytyt_varit:
+                                    valittu_pikseli = self.lyodetytyt_varit[str(pikseli)]
 
-                            numero =self.varit.index(valittu_pikseli)
-                            try:
-                                with Image.open(path.join(self.polku,"emoijit",f"emoiji_{numero}.png")) as kopioitava_kuva:
-                                    uusi_kuva.paste(kopioitava_kuva, (x_uusi_kuva,y_uusi_kuva))
-                            
-                            except FileNotFoundError:
-                                print(f"kuvaa emoiji_{numero}.png ei ole kansiossa emoiji_kuvat")
-                                break
+                                else:
+                                    for emoiji_vari in self.varit:
+                                        if valittu_pikseli[0] > emoiji_vari[0]-pikseli[0] >= 0 and valittu_pikseli[1] > emoiji_vari[1]-pikseli[1] >= 0  and valittu_pikseli[2] > emoiji_vari[2]-pikseli[2] >= 0:
+                                            valittu_pikseli = emoiji_vari
+                                            self.lyodetytyt_varit[str(pikseli)] = emoiji_vari
+
+                                numero =self.varit.index(valittu_pikseli)
+                                try:
+                                    with Image.open(path.join(self.polku,"emoijit",f"emoiji_{numero}.png")) as kopioitava_kuva:
+                                        uusi_kuva.paste(kopioitava_kuva, (x_uusi_kuva,y_uusi_kuva))
                                 
-                            x_uusi_kuva += 25
+                                except FileNotFoundError:
+                                    print(f"kuvaa emoiji_{numero}.png ei ole kansiossa emoiji_kuvat")
+                                    break
+                                    
+                                x_uusi_kuva += 25
 
-                    y_uusi_kuva += 25
-                    x_uusi_kuva = 0
+                        y_uusi_kuva += 25
+                        x_uusi_kuva = 0
 
-                    
-                return uusi_kuva
-
-    def pinta_ala(self, leveys: int, korkeus: int) -> int:
-        return leveys*korkeus*625         
-    
-    def __pyorista(self, n: float | int, tarkkuus: int = 0) -> int:
-        "tarkkuus kertoo kuinka monen desimaalin tarkuuteen pyoristää"
-        tarkkuus += 1
-        _, b = modf(n)
-        if b >= float(f"0"*tarkkuus+".5"):
-            return ceil(n)
-        else:
-            return floor(n)
-                
-
-    def analysoi_kuva(self, analysoitava_kuva: Image) -> np.array:
-        """laskee kuvan pikselit yhteen"""
-        #kuvan pikselit
-        analysoitava_kuva = np.array(analysoitava_kuva)*[1,2,3]
-
-        #laskee pikselin väri arvot yhteen
-        return analysoitava_kuva.sum(axis=2)
+                        
+                    return uusi_kuva
+        except MemoryError:
+            return "Virhe, muunettava kuvan koko on liian suuri"
 
 
 class Aplikaatio:
@@ -101,8 +81,6 @@ class Aplikaatio:
     def viiva(self, merkki: str, pituus: int):
         for i in range(pituus):
             print(merkki, end="")
-
-        
 
     def laatikko(self, teksti: str):
         """
@@ -186,48 +164,8 @@ class Aplikaatio:
                         break
 
             elif valittu_kohta.lower() == "m":
-                while True:
-                    print(" ")
-                    polku = getcwd()     
-                    tiedostot = listdir(path.join(polku,"muunnettavat kuvat"))
-
-                    for tiedosto in tiedostot:
-                        if self.onko_kuva(tiedosto):
-                            continue
-                        else:
-                            tiedostot.pop(tiedosto.index(tiedosto))
-                            
-                    if len(tiedostot) == 0:
-                        print("Muunettavia kuvia ei ole")
-                        sleep(.5)
-                        break
-
-                    tiedostott = "Tiedostot//"
-                    for tiedosto in tiedostot:
-                        tiedostott = tiedostott + f"    {tiedosto}//"
-
-                    tiedostott = tiedostott[:-2]
-
-                    self.laatikko(tiedostott)
-
-                    valittu_kohta = input("Haluatko muuntaakuvat (k/e): ")
-                    
-                    if valittu_kohta.lower() == "k":
-                        for kuva in tiedostot:
-                            muunna_kuva = MuunnaKuva(path.join(polku,"muunnettavat kuvat",kuva))
-                            muunnettu_kuva = muunna_kuva.suorita()
-
-                            kuva, _ = kuva.rsplit(".",1)
-                            
-                            muunnettu_kuva.save(path.join(polku,"muunnettavat kuvat",f"emoiji_{kuva}.png"))
-
-                        print("Muunettu")
-                        break
-
-
-                    elif valittu_kohta.lower() == "e":
-                        break
-
+                print()
+                self.kuvan_muutaminen()
 
             elif valittu_kohta.lower() == "p":
                 break
@@ -235,12 +173,69 @@ class Aplikaatio:
             else:
                 pass
 
+    def kuvan_muutaminen(self):
+            while True:
+                polku = getcwd()     
+                tiedostot = listdir(path.join(polku,"muunnettavat kuvat"))
+
+                for tiedosto in tiedostot:
+                    if self.onko_kuva(tiedosto):
+                        continue
+                    else:
+                        tiedostot.pop(tiedosto.index(tiedosto))
+                        
+                if len(tiedostot) == 0:
+                    print("Muunettavia kuvia ei ole")
+                    sleep(.5)
+                    break
+
+                tiedostott = "Tiedostot//"
+                for tiedosto in tiedostot:
+                    tiedostott = tiedostott + f"    {tiedosto}//"
+
+                tiedostott = tiedostott[:-2]
+
+                self.laatikko(tiedostott)
+
+                valittu_kohta = input("Haluatko muuntaakuvat (k/e): ")
+                
+                if valittu_kohta.lower() == "k":
+                    try:
+                        for kuva in tiedostot:
+                            muunna_kuva = MuunnaKuva(path.join(polku,"muunnettavat kuvat",kuva))
+                            muunnettu_kuva = muunna_kuva.suorita()
+
+                            if isinstance(muunnettu_kuva, Image.Image):
+                                kuva, _ = kuva.rsplit(".",1)
+                                
+                                muunnettu_kuva.save(path.join(polku,"muunnettavat kuvat",f"emoiji_{kuva}.png"))
+
+                                print("Muunettu")
+                                break
+
+                            else:
+                                print(muunnettu_kuva, end="\r")
+                                sleep(1)
+                                print("                                                                   ")
+                                break
+
+                    except FileNotFoundError:
+                        print()
+                        print("kuvia ei löytynyt", end="\r")
+                        sleep(1)
+                        print("                    ")
+                        self.kuvan_muutaminen()
+                    
+                elif valittu_kohta.lower() == "e":
+                    break
+
+
 
 class Kaynistys():
     def __init__(self) -> None:
         self.onko_kaynissa = True
         self.onko_kaiki_ok = False
-        self.virhe = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+        self.virhe = "                    "
         self.polku = getcwd()        
 
     def main(self):
@@ -278,11 +273,11 @@ class Kaynistys():
 
     def prosessointi(self):
         while self.onko_kaynissa:  
-            print("käynistyy⠀⠀⠀", end="\r")
+            print("käynistyy   ", end="\r")
             sleep(.2)
-            print("käynistyy.⠀⠀", end="\r")
+            print("käynistyy.  ", end="\r")
             sleep(.2)
-            print("käynistyy..⠀", end="\r")
+            print("käynistyy.. ", end="\r")
             sleep(.2)
             print("käynistyy...", end="\r")
             sleep(.2)
