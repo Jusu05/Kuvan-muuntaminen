@@ -13,7 +13,6 @@ class MuunnaKuva():
             self.polku = getcwd()
             self.varit = [[152, 110, 49], [149, 106, 45], [244, 200, 75], [120, 111, 77], [195, 134, 46], [204, 158, 73], [143, 126, 72], [141, 126, 73], [247, 193, 77], [45, 145, 195], [251, 223, 108], [231, 163, 47], [231, 162, 45], [166, 134, 54], [248, 200, 94], [5, 3, 0], [217, 151, 79], [11, 7, 2], [213, 168, 64], [136, 119, 70], [245, 193, 79], [247, 200, 81], [247, 202, 82], [251, 228, 121], [250, 219, 99], [143, 125, 58], [247, 201, 64], [240, 194, 77], [215, 149, 41], [143, 101, 21], [207, 144, 50], [183, 140, 73], [253, 238, 83], [81, 70, 36], [141, 113, 41], [92, 73, 29], [60, 13, 45], [36, 33, 55], [81, 59, 118], [10, 5, 13], [9, 4, 12], [201, 78, 22], [231, 174, 71], [2, 2, 2], [134, 103, 67], [84, 72, 62], [23, 9, 5], [247, 141, 33], [66, 37, 14], [62, 32, 22], [203, 62, 35], [91, 69, 61], [3, 2, 0], [179, 44, 32], [226, 207, 184], [235, 47, 32], [196, 84, 46], [86, 37, 32], [89, 29, 29], [229, 54, 107], [61, 22, 22], [230, 44, 32], [79, 40, 40], [240, 130, 128], [234, 183, 196], [208, 112, 105], [231, 190, 199], [246, 171, 163], [99, 64, 73], [89, 61, 44], [102, 132, 102], [107, 116, 37], [69, 75, 31], [92, 112, 26], [135, 198, 84], [38, 54, 42], [85, 91, 44], [41, 54, 25], [89, 130, 12], [100, 151, 6], [42, 63, 16], [41, 60, 24], [45, 60, 20], [102, 175, 65], [31, 43, 15], [0, 2, 0], [49, 97, 53], [148, 189, 123], [75, 105, 36], [53, 55, 8], [120, 176, 49], [63, 170, 84], [187, 205, 94], [86, 143, 45], [61, 65, 67], [41, 84, 92], [43, 183, 222], [110, 201, 241], [232, 248, 254], [34, 39, 41], [122, 158, 175], [53, 124, 202], [86, 123, 198], [174, 213, 239], [42, 80, 128], [60, 93, 105], [178, 184, 196], [85, 83, 80], [221, 208, 181], [232, 244, 251], [91, 93, 96], [45, 44, 42], [117, 114, 110], [91, 91, 91], [197, 170, 135], [133, 110, 122], [243, 238, 238], [5, 4, 4], [2, 2, 2], [186, 187, 188], [180, 180, 180], [121, 86, 58], [230, 212, 196], [126, 94, 62], [221, 174, 125], [119, 87, 59], [224, 177, 122], [169, 110, 65], [119, 64, 31], [145, 100, 55], [4, 4, 5], [104, 74, 52], [11, 10, 10], [199, 184, 158], [10, 9, 7], [60, 59, 60], [48, 53, 58], [35, 34, 37], [66, 64, 75], [81, 81, 82], [103, 99, 96], [66, 66, 66], [77, 80, 88], [35, 35, 35], [77, 82, 89], [260, 260, 260]]
             self.lyodetytyt_varit = {}
-                           
                 
     def suorita(self) -> Image.Image | str:
         try:
@@ -59,12 +58,10 @@ class MuunnaKuva():
 
                         y_uusi_kuva += 25
                         x_uusi_kuva = 0
-
                         
                     return uusi_kuva
         except MemoryError:
             return "Virhe, muunettava kuvan koko on liian suuri"
-
 
 class Aplikaatio:
     def __init__(self) -> None:
@@ -79,7 +76,7 @@ class Aplikaatio:
         print("                                |__/                                          ")
 
     def viiva(self, merkki: str, pituus: int):
-        for i in range(pituus):
+        for _ in range(pituus):
             print(merkki, end="")
 
     def laatikko(self, teksti: str):
@@ -121,7 +118,6 @@ class Aplikaatio:
             else:
                 continue
 
-
         pisin_pituus += 2
 
         #laatiko tekeminen
@@ -133,7 +129,6 @@ class Aplikaatio:
             rivi = rivi + " "*(pisin_pituus-len(rivi))
 
             print(f"║ {rivi[:-2]} ║")
-
 
         print("╚", end="")
         self.viiva("═",pisin_pituus)
@@ -229,8 +224,6 @@ class Aplikaatio:
                 elif valittu_kohta.lower() == "e":
                     break
 
-
-
 class Kaynistys():
     def __init__(self) -> None:
         self.onko_kaynissa = True
@@ -239,7 +232,6 @@ class Kaynistys():
         self.polku = getcwd()        
 
     def main(self):
-
         t_1 = Thread(target=self.prosessointi)
         t_2 = Thread(target=self.kaikki_ok)
         t_1.start()
@@ -250,7 +242,6 @@ class Kaynistys():
         if self.onko_kaiki_ok:
             appi = Aplikaatio()
             appi.main()
-             
 
     def kaikki_ok(self):
         kansiot_virhe, onko_kansiot_virhe = self.kansiot_ok()
@@ -261,15 +252,11 @@ class Kaynistys():
         if not onko_kaikki_emoiji_kuvat  and not onko_kaikki_emoiji_kuvat:
             self.onko_kaiki_ok = True
 
-
         if onko_kansiot_virhe:
             self.virhe += kansiot_virhe+"\n"
-
         
         if onko_kaikki_emoiji_kuvat:
             self.virhe += emoiji_kuva_virhe+"\n"
-
-        
 
     def prosessointi(self):
         while self.onko_kaynissa:  
@@ -283,6 +270,7 @@ class Kaynistys():
             sleep(.2)
 
         print(self.virhe, end="\r")
+
     def kansiot_ok(self) -> tuple[str, bool]:
         kansiot = listdir(self.polku)
         
@@ -293,12 +281,10 @@ class Kaynistys():
         if "emoijit" not in kansiot:
             virhe_viesti += "emoijit, "
         
-        
         if virhe_viesti == "":
             return "", False
         else:
             return f"Kansioita {virhe_viesti[:-2]} ei ole", True
-            
     
     def emoiji_kuvat_ok(self) -> bool:
         try:
@@ -319,8 +305,6 @@ class Kaynistys():
             return "", True
         else:         
             return virhe_viesti, False
-
-   
 
 if __name__ == "__main__":
     kaynista = Kaynistys()
