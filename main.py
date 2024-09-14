@@ -249,34 +249,24 @@ class Startup():
         self.current_directory = Path().cwd()
 
     def main(self):
-        t_1 = Thread(target=self.processing)
-        t_2 = Thread(target=self.check_everything)
-        t_1.start()
-        t_2.start()
-        t_1.join()
-        t_2.join()
+        self.t1 = Thread(target=self.processing)
+        t2 = Thread(target=self.check_everything)
+        self.t1.start()
+        t2.start()
+        self.t1.join()
+        t2.join()
 
         if self.is_everything_ok:
             app = Application()
             app.main()
 
         else:
-            print(self.error)
+            raise Exception(self.error)
 
     def check_everything(self):
-        folder_error, is_folder_error = self.check_folders()
-        emoji_image_error, is_emoji_error = self.check_emoji_images()
-
+        self.check_folders()
+        self.check_emoji_images()
         self.is_booting = False
-
-        if not is_emoji_error and not is_folder_error:
-            self.is_everything_ok = True
-
-        if is_folder_error:
-            self.error += folder_error + "\n"
-
-        if is_emoji_error and "emoijit" not in self.error:
-            self.error += emoji_image_error + "\n"
 
     def processing(self):
         while self.is_booting:
@@ -289,23 +279,32 @@ class Startup():
             print("käynistyy...", end="\r")
             time.sleep(0.2)
 
-    def check_folders(self) -> tuple[str, bool]:
-        folders = os.listdir(self.current_directory)
+    def check_erorhandeling(f):
+        def _handeler(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except Exception as e:
+                args[0].error += e + ","
+                args[0].is_everything_ok = False
 
+        return _handeler
+
+    @check_erorhandeling
+    def check_folders(self) -> tuple[str, bool]:
+        editable_images_path = self.current_directory.joinpath("muunnettavat kuvat")
+        emoijy_images = self.current_directory.joinpath("emoijit")
         error_message = ""
 
-        if "muunnettavat kuvat" not in folders:
+        if not editable_images_path.is_dir():
             error_message += "muunnettavat kuvat, "
 
-        if "emoijit" not in folders:
+        if not emoijy_images.is_dir():
             error_message += "emoijit, "
 
-        if error_message == "":
-            return "", False
+        if len(error_message) != 0:
+            raise NotADirectoryError(f"kasioita {error_message} ei ole tai ne eivät ole kansioita")
 
-        else:
-            return f"Virhe, kansioita {error_message[:-2]} ei ole", True
-
+    @check_erorhandeling
     def check_emoji_images(self) -> bool:
         images = os.listdir(self.current_directory.joinpath("emoijit"))
 
@@ -316,10 +315,8 @@ class Startup():
             if f"emoiji_{i}.png" not in images:
                 error_message += f"emoiji_{i}.png, "
                 is_error = True
-
-        error_message = f"Virhe, Kuvia ei ole: {error_message[3:-2]} kansiossa emoijit"
-
-        return error_message, is_error
+        if is_error:
+            raise FileNotFoundError(f"Virhe, Kuvia ei ole: {error_message[3:-2]} kansiossa emoijit")
 
 if __name__ == "__main__":
     start = Startup()
