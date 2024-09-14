@@ -89,15 +89,15 @@ class ImageEditor:
 
 class Application:
     def __init__(self):
-        pass
+        self.current_path = Path().cwd()
 
     def logo(self):
-        print(" _____                       _     _   _         _  __                        ")
-        print("| ____|  _ __ ___     ___   (_)   (_) (_)       | |/ /  _   _  __   __   __ _ ")
-        print("|  _|   | '_ ` _ \   / _ \  | |   | | | |       | ' /  | | | | \ \ / /  / _` |")
-        print("| |___  | | | | | | | (_) | | |   | | | |       | . \  | |_| |  \ V /  | (_| |")
-        print("|_____| |_| |_| |_|  \___/  |_|  _/ | |_|       |_|\_\  \__,_|   \_/    \__,_|")
-        print("                                |__/                                          ")
+            print(" _____                       _     _   _         _  __                        ")
+            print("| ____|  _ __ ___     ___   (_)   (_) (_)       | |/ /  _   _  __   __   __ _ ")
+            print("|  _|   | '_ ` _ \   / _ \  | |   | | | |       | ' /  | | | | \ \ / /  / _` |")
+            print("| |___  | | | | | | | (_) | | |   | | | |       | . \  | |_| |  \ V /  | (_| |")
+            print("|_____| |_| |_| |_|  \___/  |_|  _/ | |_|       |_|\_\  \__,_|   \_/    \__,_|")
+            print("                                |__/                                          ")
 
     def line(self, character: str, length: int, end="\n"):
         "tekee vivaan jostain merkistä"
@@ -155,69 +155,90 @@ class Application:
     def instructions(self):
         while True:
             print(" ")
-            self.box("*Ohjeet*////Muuntaaksesi kuvan pikselit emojiksi kopio kaikki kuvat//kansioon ”muunnettavat kuvat”.Sen jälkeen valitse//päävalikosta ”Muuna kuva” ja ohjelma//muuntaa kuvan.////takaisin: t")
+            self.box("*Ohjeet*////Muuntaaksesi kuvan pikselit emojiksi kopio kaikki kuvat//kansioon ”muunnettavat kuvat”. Sen jälkeen valitse//päävalikosta ”Muuna kuva” ja ohjelma//muuntaa kuvan.////takaisin: t")
             user_choice = input("Valitse kohta: ")
             if user_choice.lower() == "t":
                 break
 
     def image_converter(self):
         while True:
-            current_path = Path().cwd()
-            files = os.listdir(current_path.joinpath("muunnettavat kuvat"))
-
-            valid_files = []
-            for file in files:
-                if self.is_image_ok(file):
-                    valid_files.append(file)
+            files = os.listdir(self.current_path.joinpath("muunnettavat kuvat"))
+            valid_files = list(filter(self.is_image_ok, files))
 
             if len(valid_files) == 0:
                 print("Muunnettavia kuvia ei ole")
                 time.sleep(0.5)
                 break
 
-            files = "Tiedostot//"
-            for file in valid_files:
-                files = files + f"{valid_files.index(file)+1}.    {file}//"
-            files = files[:-2]
+            self.imege_converter_menu(valid_files)
+            user_input = input("Valitse kohta: ").lower()
 
-            self.box(files)
+            if user_input == "y":
+                while True:
+                    try:
+                        user_image_choice = int(input(f"Minkä kuvan haluat muntaa: "))
+                        if not 0 < user_image_choice < len(valid_files) + 1:
+                            raise ValueError
+                        if self.user_validatadet_action("Haluatko varmasti muuntaa kuvan (k/e): "):
+                            image = valid_files[user_image_choice-1]
+                            self.imege_converter_menu(image)
+                            break
+                        else:
+                            break
+                    except ValueError:
+                        print("Antamasi arvo ei kelpaa")
 
-            user_choice = input(f"Haluatko muuntaakuvan (k/e): ")
+            elif user_input == "k":
+                while True:
+                    if self.user_validatadet_action("Haluatko varmasti muuntaa kaikki kuvat (k/e): "):
+                        self.convert_image(valid_files)
 
-            if user_choice.lower() == "k":
-                user_choice = int(input(f"Minkä kuvan haluat muntaa: "))
-
-                try:
-                    image = valid_files[user_choice-1]
-                    converter = ImageEditor(os.path.join(current_path,"muunnettavat kuvat", image))
-                    converted_image = converter.convert_pixes_to_emoji()
-
-                    if isinstance(converted_image, Image.Image):
-                        image, _ = image.rsplit(".",1)
-
-                        converted_image.save(os.path.join(current_path,"muunnettavat kuvat",f"emoiji_{image}.png"))
-
-                        print("Muunettu")
-                        break
-
-                    else:
-                        print()
-                        print()
-                        print(converted_image, end="\r")
-                        time.sleep(5)
-                        print("                                                                   ")
-                        break
-
-                except FileNotFoundError:
-                    print()
-                    print("kuvia ei löytynyt", end="\r")
-                    time.sleep(1)
-                    print("                    ")
-                    self.image_converter()
-
-            elif user_choice.lower() == "e":
+            elif user_input == "t":
                 break
 
+    def convert_image(self, *convert_images):
+        try:
+            for image in convert_images:
+                converter = ImageEditor(self.current_path.joinpath("muunnettavat kuvat", image))
+                converted_image = converter.convert_pixles_to_emoji()
+
+                if isinstance(converted_image, Image.Image):
+                    image, _ = image.rsplit(".",1)
+
+                    converted_image.save(self.current_path.joinpath("muunnettavat kuvat",f"emoiji_{image}.png"))
+
+                    print("Muunettu")
+
+                else:
+                    print()
+                    print()
+                    print(converted_image, end="\r")
+                    time.sleep(5)
+                    print("                                                                   ")
+
+        except FileNotFoundError:
+            print()
+            print("kuvia ei löytynyt", end="\r")
+            time.sleep(1)
+            print("                    ")
+            self.image_converter()
+
+    def imege_converter_menu(self, valid_files):
+        sub_menu = "Tiedostot//"
+        for file in valid_files:
+            sub_menu = sub_menu + f"{valid_files.index(file)+1}.    {file}//"
+        sub_menu = sub_menu + f"//muunna yksi kuva: y, muuna kaikki kuvat: k, takaisin: t"
+
+        self.box(sub_menu)
+    
+    def user_validatadet_action(self, message: str) -> bool:
+        while True:
+            user_input = input(message).lower()
+            if user_input == "k":
+                return True
+            elif user_input == "e":
+                return True
+    
     def main(self):
         self.logo()
 
@@ -244,7 +265,7 @@ class Application:
 class Startup():
     def __init__(self) -> None:
         self.is_booting = True
-        self.is_everything_ok = False
+        self.is_everything_ok = True
         self.error = ""
         self.current_directory = Path().cwd()
 
@@ -284,7 +305,7 @@ class Startup():
             try:
                 return f(*args, **kwargs)
             except Exception as e:
-                args[0].error += e + ","
+                args[0].error += str(e) + ","
                 args[0].is_everything_ok = False
 
         return _handeler
